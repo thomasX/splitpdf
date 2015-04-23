@@ -129,15 +129,13 @@ mkdir $tempout
 cd $tempdir
 #/usr/bin/pdftoppm -rx 300 -ry 300 -png $inputfile pg
 srcpdf=$tempdir/srcpdf.pdf
-/bin/cp $inputfile $srcpdf
+currentOutputFilename=$(basename "$inputfile")
+/bin/mv $inputfile $srcpdf
 totalpages=$(pdfinfo $srcpdf | grep Pages | awk '{print $2}')
 startpage=1
 currentPage=0
-currentOutputFilename=$(basename "$inputfile")
 currentOutputFilename=$(echo "$outputdir"/"$currentOutputFilename")
 scancommand=$(echo "zbarimg -q -Sdisable -S$barcodeType"."enable split-1.jpg | grep -E '^$barcodeTypeHeader' | sed -e 's/^$barcodeTypeHeader//' | grep -E -m 1 '$barcodePattern' " )
-echo "das pdf file $inputfile hat $totalpages Seiten .... wir suchen: $barcodeTypeHeader"
-echo "scancommand:$scancommand"
 splitpdf=$tempdir/split.pdf
 echo -n " $inputfile : $totalpages "
 while [ $currentPage -lt $totalpages ]
