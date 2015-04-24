@@ -125,7 +125,6 @@ barcodePattern=$(echo '^'"$4"'/[^/]{1,'"$5"}'/$')
 barcodeTypeHeader=$(getTypeHeader $barcodeType)
 tempdir=$(/bin/mktemp -d /scandata/tempDir/splitDir_XXXXXXXXXXXXXXXX)
 cd $tempdir
-#/usr/bin/pdftoppm -rx 300 -ry 300 -png $inputfile pg
 srcpdf=$tempdir/srcpdf.pdf
 currentOutputFilename=$(basename "$inputfile")
 /bin/mv $inputfile $srcpdf
@@ -154,5 +153,4 @@ done
 exportSplitpdf "$srcpdf" "$startpage" "$currentPage" "$currentOutputFilename" 
 cd /home
 /bin/rm -Rf $tempdir
-echo " "
 
