@@ -142,7 +142,7 @@ do
    curBarcode='';
    curBarcode=$(getBarcodeFromPage "$srcpdf" "$currentPage" "$splitpdf" "$scancommand" )
    echo "page: $currentPage  barcode: $curBarcode" >> /var/log/syslog
-   echo -n "."
+   #echo -n "."
    if [ -n "$curBarcode" ] ; then 
           lpage=$(($currentPage -1));
           if [ $lpage -gt 0 ] ; then 
