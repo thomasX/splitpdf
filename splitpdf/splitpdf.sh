@@ -157,4 +157,4 @@ exportSplitpdf "$srcpdf" "$startpage" "$currentPage" "$currentOutputFilename"
 cd /home
 /bin/rm -Rf $tempdir
 echo " "
-
+echo "test"
