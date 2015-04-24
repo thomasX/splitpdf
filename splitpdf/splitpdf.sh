@@ -127,6 +127,7 @@ tempdir=$(/bin/mktemp -d /scandata/tempDir/splitDir_XXXXXXXXXXXXXXXX)
 cd $tempdir
 srcpdf=$tempdir/srcpdf.pdf
 currentOutputFilename=$(basename "$inputfile")
+echo "splitting $inputfile" >> /var/log/syslog
 /bin/mv $inputfile $srcpdf
 totalpages=$(pdfinfo $srcpdf | grep Pages | awk '{print $2}')
 startpage=1
@@ -140,6 +141,7 @@ do
    currentPage=$(($currentPage+1))
    curBarcode='';
    curBarcode=$(getBarcodeFromPage "$srcpdf" "$currentPage" "$splitpdf" "$scancommand" )
+   echo "page: $currentPage  barcode: $curBarcode" >> /var/log/syslog
    echo -n "."
    if [ -n "$curBarcode" ] ; then 
           lpage=$(($currentPage -1));
