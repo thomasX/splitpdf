@@ -3,6 +3,27 @@
 #pdf splitting script by t.margreiter
 # used resources: pdftk, pdftoppm, exactimage
 #########################################################################################
+
+#loggingfunction
+DATE='date +%Y/%m/%d:%H:%M:%S'
+LOGGING_PREFIX=" scan-server-logging $0:"
+
+write_log_info() {
+   LOGMSG=$(echo "INFO "`$DATE`"$LOGGING_PREFIX $1")
+   logger -p local7.info "$LOGMSG"
+}
+write_log_warning() {
+   LOGMSG=$(echo "WARNING "`$DATE`"$LOGGING_PREFIX $1")
+   logger -p local7.warning "$LOGMSG"
+}
+write_log_error() {
+   LOGMSG=$(echo "ERROR "`$DATE`"$LOGGING_PREFIX $1")
+   logger -p syslog.error "$LOGMSG"
+}
+
+
+
+
 ### subroutine display usage ### 
 display_usage() {
      echo '###############################################################################'
@@ -41,7 +62,7 @@ getTypeHeader() {
  # if [ "$1" = "isbn10" ]; then header="CODE-128" ; fi 
  # if [ "$1" = "i25" ]; then header="CODE-128" ; fi 
  # if [ "$1" = "pdf417" ]; then header="CODE-128" ; fi 
-  echo $header
+  write_log_info "barcode-Type: $header"
 }
 #########################################################################################
 
@@ -83,7 +104,7 @@ getBarcodeFromPage(){
    pdftoppm -rx 300 -ry 300 -jpeg $3 split
    ## seite liegt auf split-1.jpg
    barResult=$(eval $4)
-   echo "$barResult" 
+   write_log_info "Barcode: $barResult" 
 }
 #########################################################################################
 
@@ -105,14 +126,16 @@ createOutputFilename(){
 	barValue=$(eval $sedcommand)
 	regularFileName=$(echo -n $barValue | tr -c 'a-zA-Z0-9\-' '_')
 	exportFile=$(echo -n "$3"/"$regularFileName".pdf)
-	echo "$exportFile"
+	write_log_info "Exportfile: $exportFile"
 }
 #########################################################################################
 
 #########################################################################################
 #########################################################################################
+write_log_info "splitpdf gestartet "
 if [ ! $# -eq 5 ]; then 
     echo ' wrong number of parameters ! '
+    write_log_error ' wrong number of parameters ! '
     display_usage
     exit 0
 fi
@@ -127,7 +150,7 @@ tempdir=$(/bin/mktemp -d /scandata/tempDir/splitDir_XXXXXXXXXXXXXXXX)
 cd $tempdir
 srcpdf=$tempdir/srcpdf.pdf
 currentOutputFilename=$(basename "$inputfile")
-echo "splitting $inputfile" >> /var/log/syslog
+write_log_info "splitting $inputfile" 
 /bin/mv $inputfile $srcpdf
 totalpages=$(pdfinfo $srcpdf | grep Pages | awk '{print $2}')
 startpage=1
@@ -135,13 +158,13 @@ currentPage=0
 currentOutputFilename=$(echo "$outputdir"/"$currentOutputFilename")
 scancommand=$(echo "zbarimg -q -Sdisable -S$barcodeType"."enable split-1.jpg | grep -E '^$barcodeTypeHeader' | sed -e 's/^$barcodeTypeHeader//' | grep -E -m 1 '$barcodePattern' " )
 splitpdf=$tempdir/split.pdf
-echo -n " $inputfile : $totalpages "
+write_log_info " $inputfile : $totalpages "
 while [ $currentPage -lt $totalpages ]
 do 
    currentPage=$(($currentPage+1))
    curBarcode='';
    curBarcode=$(getBarcodeFromPage "$srcpdf" "$currentPage" "$splitpdf" "$scancommand" )
-   echo "page: $currentPage  barcode: $curBarcode" >> /var/log/syslog
+   write_log_info "page: $currentPage  barcode: $curBarcode" 
    #echo -n "."
    if [ -n "$curBarcode" ] ; then 
           lpage=$(($currentPage -1));
